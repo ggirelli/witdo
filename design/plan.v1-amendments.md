@@ -122,3 +122,33 @@ Amends §5, §6 and §7. Decided 2026-10-18.
   a deleted file writes it again.
 - **Durability:** files are fsynced before they are moved into place; the
   directory is fsynced after on Unix, as a best effort.
+
+## The two UIs in detail
+
+Amends §10, §11 and §13 (step 5), and settles the open questions above.
+Decided 2026-10-18.
+
+- **Feature parity:** both apps cover all of §11 in the first version.
+  What both need (list rows and their flags, sidebar counts, a task's detail,
+  reading typed due dates and tags) lives in `witdo-app`, so the UIs only lay
+  it out.
+- **Edits save field by field**, as soon as a field is changed; there is no
+  separate Save step and no unsaved state to lose.
+- **Conflicts:** an edit starts from the version of the task on screen (a
+  `Draft` remembers its revision), so it stops with Reload / Overwrite when
+  the file changed since, even if the change was already reloaded.
+- **Notes:** the desktop app edits them in a plain text area. The terminal app
+  opens the task's own Markdown file in `$VISUAL` / `$EDITOR` (falling back to
+  `vi`), then reloads it; the file stays the single source of truth.
+- **Keys:** the terminal app adds `x`/Space for done (most terminals cannot
+  report Ctrl+Enter), `d` delete, `e` edit file, `t` tree, `r` reload,
+  `w` switch workspace and `?` help, besides the keys of §11.
+- **Command line:** both binaries take `--profile`, `--workspace`, `--help`
+  and `--version`; `--profile` wins over `WITDO_PROFILE`.
+- **Known limitation:** file I/O runs on the UI thread in both apps, except
+  watching. Writes touch one or a few small files and are quick; opening a
+  very large workspace may pause the window for a moment. Moving scans off the
+  UI thread is left for when it is measured to matter.
+- **Desktop CSS** is embedded in the binary (`include_str!` into the window's
+  head) rather than through Dioxus's `asset!`, so `cargo run` works without
+  the `dx` bundler.

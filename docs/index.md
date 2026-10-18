@@ -14,12 +14,12 @@ to read and edit in Obsidian or any text editor. There is no account, server,
 telemetry or network access.
 
 [Get started](getting-started.md){ .md-button .md-button--primary }
+[Using witdo](using-witdo.md){ .md-button }
 [Task file format](task-file-format.md){ .md-button }
 
-!!! warning "Early development"
-    The desktop window and the terminal app open, but witdo does not manage
-    tasks yet. Pages in this guide describe how it will work, and say so where
-    a feature is not built yet.
+!!! warning "First version"
+    witdo is new and not released yet: build it from source, and keep a
+    backup of your tasks folder while it matures.
 
 !!! info "Free, open source and vibe coded"
     - **Free and open source** under the

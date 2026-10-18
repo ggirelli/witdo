@@ -1,8 +1,5 @@
 # Task file format
 
-!!! note "Not built yet"
-    This page describes the format witdo will read and write.
-
 Every task is one Markdown file in the workspace's `tasks/` folder: YAML front
 matter with its fields, then your notes.
 
@@ -56,7 +53,12 @@ witdo does not change it.
 - **File names** are `<title>--<short id>.md`, for example
   `call-the-bank--7tn3wd0r.md`. witdo renames the file when the title changes.
   The name is only for you: any `.md` file in `tasks/` with valid front matter
-  is a task. Renaming does break Obsidian `[[wikilinks]]` to the old name.
+  is a task. A file you named yourself, such as `Bank.md`, keeps its name.
+  Renaming does break Obsidian `[[wikilinks]]` to the old name.
+- **Unknown fields** keep their values but may change style: a list written
+  as `[a, b]` comes back as one item per line.
+- **Deleted tasks** go to `.witdo/trash/` as
+  `<old name>--deleted-<time>.md`; move one back to `tasks/` to restore it.
 - **Tags** are matched ignoring case, so `Writing` and `writing` are the same
   tag. Categories are matched exactly.
 

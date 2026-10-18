@@ -9,9 +9,10 @@ terminal. Your tasks are plain Markdown files in a folder you choose, pleasant
 to read and edit in Obsidian or any text editor. There is no account, server,
 telemetry or network access.
 
-> **Status:** early development. The desktop window and the terminal app open,
-> but it does not manage tasks yet. See [the implementation
-> brief](design/plan.v1.md) for where it is heading.
+> **Status:** first version, not released yet. Both apps manage tasks:
+> capture, views, subtasks, dependencies, search and filters, profiles and
+> workspaces. Build it from source as below; see the
+> [user guide](docs/using-witdo.md) for how to use it.
 
 ## Setting up
 
@@ -54,7 +55,7 @@ The user guide lives in [`docs/`](docs/) and is built with MkDocs into
 
 ## Profiles and workspaces
 
-_Planned; not built yet._ A **workspace** is a folder of tasks, entirely
+A **workspace** is a folder of tasks, entirely
 self-contained. A **profile** is a separate set of app state (known workspaces,
 window preferences), so a "work" profile never sees a "personal" one. Choose one
 with `witdo --profile <name>` or `WITDO_PROFILE=<name>`, and open a folder
@@ -62,7 +63,7 @@ directly with `witdo --workspace <path>`.
 
 ## File format
 
-_Planned; not built yet._ One Markdown file per task in the workspace's `tasks/`
+One Markdown file per task in the workspace's `tasks/`
 folder, with YAML front matter for its fields and your notes below. See [§5 of
 the brief](design/plan.v1.md#5-task-file-format).
 

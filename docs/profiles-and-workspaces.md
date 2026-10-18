@@ -1,8 +1,5 @@
 # Profiles and workspaces
 
-!!! note "Not built yet"
-    This page describes how profiles and workspaces will work.
-
 ## Workspaces
 
 A **workspace** is a folder of tasks. It is entirely self-contained: every
@@ -28,6 +25,14 @@ my-workspace/
 
 You can turn a folder that already has files in it into a workspace; witdo
 asks first, and never moves, renames or changes the files that are there.
+
+To open a workspace, pick it from the profile's recent list when witdo starts
+(or with **Switch…** in the desktop app, `w` in the terminal app), or type a
+folder's path: a folder that is not a workspace yet becomes one. *Forget*
+removes a workspace from the list and leaves its files alone.
+
+Deleting `.witdo/tmp/` or the profile's configuration never loses tasks; witdo
+recreates what it needs.
 
 ## Profiles
 

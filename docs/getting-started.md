@@ -38,3 +38,11 @@ just tui   # the terminal app; q or Esc quits
 - **Terminal app** (`witdo-tui`): the same tasks in a terminal, handy over SSH.
 
 Both read and write the same files, so you can switch between them freely.
+
+## The first time
+
+witdo asks for a folder to keep your tasks in. Type its path; if the folder
+does not exist or is empty, witdo makes it a workspace straight away, and if
+it has files in it, witdo asks first. Next time, witdo opens it again.
+
+Then add a task, and read [Using witdo](using-witdo.md) for the rest.

@@ -52,6 +52,7 @@ nav:
   - Home: index.md
   - Guide:
       - Getting started: getting-started.md
+      - Using witdo: using-witdo.md
       - Profiles and workspaces: profiles-and-workspaces.md
       - Task file format: task-file-format.md
   - Development: development.md
