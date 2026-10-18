@@ -8,7 +8,10 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+jiff.workspace = true
+thiserror.workspace = true
 witdo-core.workspace = true
+yaml-rust2 = "0.13"
 
 [lints]
 workspace = true

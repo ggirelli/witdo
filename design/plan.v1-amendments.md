@@ -65,3 +65,25 @@ Amends §6. Decided 2026-10-18.
 - **Edits that keep existing problems are allowed.** The check on write only
   looks at links the edit adds: a new parent, or prerequisites not there
   before.
+
+## Front matter in detail
+
+Amends §5. Decided 2026-10-18.
+
+- **YAML crate:** `yaml-rust2`. Both serde forks the plan suggested
+  (`serde_yaml_ng`, `serde_norway`) have not been updated since 2024;
+  yaml-rust2 is maintained, keeps mappings in order (so unknown keys keep their
+  order), reports line numbers, and can emit YAML for writing unknown keys back.
+- **Known keys** are written as in the §5 example: double-quoted strings,
+  `null`, and flow lists (`["writing", "q4"]`). **Unknown keys** are written in
+  yaml-rust2's block style, so `aliases: [a]` comes back as `aliases:\n  - a`;
+  the values are the same.
+- **Reading is lenient** about YAML types: unquoted values, block lists, and
+  numbers or booleans where text is expected (`title: 2026`) are all fine.
+  Timestamps may have any offset and are read as UTC; witdo writes them in UTC
+  with whole seconds.
+- **The notes** start after the closing `---` line. The line break right after
+  it (usually a blank line) is kept as it was, so the notes come back byte for
+  byte; a new task's notes start after a blank line.
+- A file may start with a UTF-8 byte order mark; witdo ignores it and does not
+  write it back.
