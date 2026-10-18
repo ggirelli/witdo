@@ -10,6 +10,9 @@ license = "MIT"
 publish = false
 
 [workspace.dependencies]
+jiff = "0.2"
+thiserror = "2"
+ulid = "3"
 witdo-core = { path = "crates/witdo-core" }
 witdo-io = { path = "crates/witdo-io" }
 witdo-app = { path = "crates/witdo-app" }
