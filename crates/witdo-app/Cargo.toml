@@ -9,7 +9,7 @@ publish.workspace = true
 
 [dependencies]
 witdo-core.workspace = true
-witdo-store.workspace = true
+witdo-io.workspace = true
 
 [lints]
 workspace = true

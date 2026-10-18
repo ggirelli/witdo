@@ -61,7 +61,7 @@ front matter for its fields and your notes below. See
 ```text
 crates/
   witdo-core/      task model, hierarchy and dependencies, views, search, filters
-  witdo-store/     Markdown files, workspace layout, safe writes, trash, watching
+  witdo-io/        Markdown files, workspace layout, safe writes, trash, watching
   witdo-app/       use cases: task lifecycle, workspaces and profiles
   witdo-desktop/   Dioxus desktop UI and the `witdo` binary
 design/            plans and design notes

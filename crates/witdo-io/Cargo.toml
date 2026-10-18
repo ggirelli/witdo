@@ -1,6 +1,6 @@
 [package]
-name = "witdo-store"
-description = "witdo's Markdown storage: task files, workspace layout, scanning, safe writes, trash and watching"
+name = "witdo-io"
+description = "witdo's file I/O: task files, workspace layout, scanning, safe writes, trash and watching"
 version.workspace = true
 edition.workspace = true
 repository.workspace = true

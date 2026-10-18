@@ -9,7 +9,7 @@
    just check   # rustfmt, clippy (pedantic, warnings are errors), tests, cargo-deny
    ```
 
-3. Add or update tests. Domain rules (`witdo-core`) and storage rules (`witdo-store`) are tested
+3. Add or update tests. Domain rules (`witdo-core`) and storage rules (`witdo-io`) are tested
    before any UI depends on them.
 4. Update the docs that describe what you changed: [README.md](README.md) for people using witdo,
    `design/` for how it works (new decisions go in a new `design/plan.vN.md` or a focused note),
@@ -20,7 +20,7 @@
 - Code follows `rustfmt` and `clippy::pedantic`; `unsafe` is forbidden. Prefer clear names over
   comments, and comment the *why* when it is not obvious.
 - Respect the crate boundaries: `witdo-core` knows nothing about files or the UI, all workspace
-  file I/O goes through `witdo-store`, and the UI calls `witdo-app` only.
+  file I/O goes through `witdo-io`, and the UI calls `witdo-app` only.
 - Errors are actionable and never swallowed. Logs never include task titles or notes.
 - Messages shown to people are short, friendly sentences in British English.
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)

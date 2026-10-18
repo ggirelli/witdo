@@ -8,5 +8,5 @@ All notable changes to witdo are listed here. The format follows
 
 ### Added
 
-- Project skeleton: a Cargo workspace with `witdo-core`, `witdo-store`, `witdo-app` and
+- Project skeleton: a Cargo workspace with `witdo-core`, `witdo-io`, `witdo-app` and
   `witdo-desktop`, a desktop window that opens, and `just` recipes for running and checking.

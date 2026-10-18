@@ -11,7 +11,7 @@ publish = false
 
 [workspace.dependencies]
 witdo-core = { path = "crates/witdo-core" }
-witdo-store = { path = "crates/witdo-store" }
+witdo-io = { path = "crates/witdo-io" }
 witdo-app = { path = "crates/witdo-app" }
 dioxus = { version = "0.7", features = ["desktop"] }
 
