@@ -27,6 +27,10 @@ tree, a task's parents (and in a category, its subtasks from other categories)
 are shown dimmed, for context.
 
 **Search** looks for text in titles and notes, in whatever view is open.
+**Filters** narrow it further, by status, priority, due date (overdue, today,
+this week, or none), category, tag, and parent (top level only, or everything
+under a task): the **Filters** button in the desktop app, `f` in the terminal
+app. Search and filters all apply together.
 
 ## Subtasks and dependencies
 
@@ -81,6 +85,7 @@ witdo stops and asks: **reload** (your change is dropped) or **overwrite**.
 | --------------------- | --------------------------------------------- |
 | `n`                   | Add tasks (Esc when done)                     |
 | `/`                   | Search as you type                            |
+| `f`                   | Filters (`←` `→` change one, `c` clears)      |
 | `↑` `↓` or `j` `k`    | Move                                          |
 | `Tab`                 | Next panel: views, list, task                 |
 | `Enter`               | Open the task, or edit the chosen field       |
