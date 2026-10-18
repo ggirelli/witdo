@@ -152,3 +152,15 @@ Decided 2026-10-18.
 - **Desktop CSS** is embedded in the binary (`include_str!` into the window's
   head) rather than through Dioxus's `asset!`, so `cargo run` works without
   the `dx` bundler.
+
+## A web app: not now
+
+Confirms §3. Decided 2026-10-18.
+
+Packaging the UI as a web app was considered and dropped for now. A browser
+page cannot read or watch a folder by itself, so it would take a local server
+(`witdo-web`, serving the Dioxus UI through liveview or fullstack while doing
+the file I/O), which goes against "no server, no network access" and, beyond
+`127.0.0.1`, needs authentication. A pure in-browser app would need the
+Chromium-only File System Access API, no watching, and a new I/O layer. If it
+comes back, the local server on loopback is the way to start.
