@@ -10,7 +10,9 @@ use ratatui::widgets::{Block, Clear, List, ListItem, ListState, Paragraph, Wrap}
 use witdo_app::model::{PrerequisiteState, Priority, Status, SubtaskChoice, View};
 use witdo_app::{Detail, Layout, ProblemKind, Row};
 
-use crate::app::{App, Chooser, Confirm, Desk, Field, Focus, Message, Mode, Nav, Purpose, Screen};
+use crate::app::{
+    App, Chooser, Confirm, Desk, Field, FilterRow, Focus, Message, Mode, Nav, Purpose, Screen,
+};
 use crate::input::TextInput;
 
 pub fn draw(frame: &mut Frame, app: &App) {
@@ -55,6 +57,7 @@ pub fn draw(frame: &mut Frame, app: &App) {
                 Mode::Pick(picker) => draw_picker(frame, body, desk, picker),
                 Mode::Confirm(confirm) => draw_confirm(frame, body, desk, confirm),
                 Mode::Help => draw_help(frame, body),
+                Mode::Filter(row) => draw_filters(frame, body, desk, *row),
                 Mode::Normal => {}
             }
         }
@@ -77,12 +80,13 @@ fn desk_hints(desk: &Desk) -> &'static str {
         (Mode::Search(_), _) => "Enter keep · Esc clear",
         (Mode::EditField(..), _) => "Enter save · Esc cancel",
         (Mode::Pick(_), _) => "type to search · ↑↓ choose · Enter pick · Esc close",
+        (Mode::Filter(_), _) => "↑↓ filter · ←→ change · c clear all · Esc close",
         (Mode::Confirm(_) | Mode::Help, _) => "",
         (Mode::Normal, Focus::Detail) => {
             "↑↓ field · Enter edit · ←→ change · e notes · x done · Esc back"
         }
         (Mode::Normal, _) => {
-            "n new · / search · x done · d delete · t tree · Tab panels · ? help · q quit"
+            "n new · / search · f filter · x done · d delete · t tree · Tab panels · ? help · q quit"
         }
     }
 }
@@ -277,7 +281,17 @@ fn draw_rows(frame: &mut Frame, area: Rect, desk: &Desk) {
             } else {
                 format!(" · “{}”", desk.search)
             };
-            format!(" {name}{layout}{search} ")
+            let filters: Vec<String> = FilterRow::ALL
+                .into_iter()
+                .map(|row| desk.filter_label(row))
+                .filter(|label| label != "Any")
+                .collect();
+            let filters = if filters.is_empty() {
+                String::new()
+            } else {
+                format!(" · {}", filters.join(", "))
+            };
+            format!(" {name}{layout}{search}{filters} ")
         }
         (Nav::Problems, _) => " Problems ".to_owned(),
     };
@@ -604,10 +618,30 @@ fn draw_confirm(frame: &mut Frame, area: Rect, desk: &Desk, confirm: &Confirm) {
     draw_dialog(frame, area, heading, Text::from(text));
 }
 
+fn draw_filters(frame: &mut Frame, area: Rect, desk: &Desk, current: FilterRow) {
+    let lines: Vec<Line> = FilterRow::ALL
+        .into_iter()
+        .map(|row| {
+            let label = Span::raw(format!("{:<10}", row.label()));
+            let label = if row == current {
+                label.reversed()
+            } else {
+                label.dim()
+            };
+            Line::from(vec![
+                label,
+                Span::raw(format!(" ‹ {} ›", desk.filter_label(row))),
+            ])
+        })
+        .collect();
+    draw_dialog(frame, area, " Filters ", Text::from(lines));
+}
+
 fn draw_help(frame: &mut Frame, area: Rect) {
     let text = "\
 n            new task (into the inbox)
 /            search titles and notes
+f            filter by status, priority, due date, category, tag, parent
 ↑↓ or j k    move
 Enter        open the task / edit a field
 Tab          next panel (views, list, task)

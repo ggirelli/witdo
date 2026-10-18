@@ -5,7 +5,8 @@ use std::sync::mpsc::{self, Receiver};
 
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use witdo_app::model::{
-    Category, CompletionWarnings, Filter, Priority, Status, SubtaskChoice, TaskId, Title, View,
+    Category, CategoryFilter, CompletionWarnings, DueFilter, Filter, ParentFilter, Priority,
+    Status, SubtaskChoice, TaskId, Title, View,
 };
 use witdo_app::{
     AppError, Clock, DirectoryState, Draft, Layout, Linked, Opening, Overwrite, ProblemReport,
@@ -77,6 +78,8 @@ pub struct Desk {
     pub focus: Focus,
     pub layout: Layout,
     pub search: String,
+    /// Everything but the text: status, priority, due date, category, tags, parent.
+    pub filters: Filter,
     pub rows: Vec<Row>,
     pub selected: usize,
     pub problems: Vec<ProblemReport>,
@@ -108,7 +111,52 @@ pub enum Mode {
     EditField(Field, TextInput),
     Pick(Picker),
     Confirm(Confirm),
+    /// The filter panel, on one of its rows.
+    Filter(FilterRow),
     Help,
+}
+
+/// A row of the filter panel.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FilterRow {
+    Status,
+    Priority,
+    Due,
+    Category,
+    Tag,
+    Parent,
+}
+
+impl FilterRow {
+    pub const ALL: [Self; 6] = [
+        Self::Status,
+        Self::Priority,
+        Self::Due,
+        Self::Category,
+        Self::Tag,
+        Self::Parent,
+    ];
+
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Status => "Status",
+            Self::Priority => "Priority",
+            Self::Due => "Due",
+            Self::Category => "Category",
+            Self::Tag => "Tag",
+            Self::Parent => "Parent",
+        }
+    }
+
+    fn step(self, forward: bool) -> Self {
+        let index = Self::ALL.iter().position(|&row| row == self).unwrap_or(0);
+        let next = if forward {
+            (index + 1).min(Self::ALL.len() - 1)
+        } else {
+            index.saturating_sub(1)
+        };
+        Self::ALL[next]
+    }
 }
 
 /// The detail panel's fields, in order.
@@ -416,6 +464,7 @@ impl Desk {
             focus: Focus::List,
             layout: Layout::List,
             search: String::new(),
+            filters: Filter::default(),
             rows: Vec::new(),
             selected: 0,
             problems: Vec::new(),
@@ -450,8 +499,113 @@ impl Desk {
     pub fn filter(&self) -> Filter {
         Filter {
             text: self.search.clone(),
-            ..Filter::default()
+            ..self.filters.clone()
         }
+    }
+
+    /// The choices for one row of the filter panel, each as the whole filter it gives, with a
+    /// label; the current filter is among them.
+    pub fn filter_choices(&self, row: FilterRow) -> Vec<(String, Filter)> {
+        let with = |change: &dyn Fn(&mut Filter)| {
+            let mut filter = self.filters.clone();
+            change(&mut filter);
+            filter
+        };
+        let any = (
+            "Any".to_owned(),
+            match row {
+                FilterRow::Status => with(&|f| f.statuses.clear()),
+                FilterRow::Priority => with(&|f| f.priorities.clear()),
+                FilterRow::Due => with(&|f| f.due = None),
+                FilterRow::Category => with(&|f| f.category = None),
+                FilterRow::Tag => with(&|f| f.tags.clear()),
+                FilterRow::Parent => with(&|f| f.parent = None),
+            },
+        );
+        let tasks = self.session.tasks();
+        let mut choices = vec![any];
+        match row {
+            FilterRow::Status => choices.extend(
+                Status::ALL.map(|s| (s.label().to_owned(), with(&|f| f.statuses = vec![s]))),
+            ),
+            FilterRow::Priority => choices.extend(
+                Priority::ALL.map(|p| (p.label().to_owned(), with(&|f| f.priorities = vec![p]))),
+            ),
+            FilterRow::Due => choices.extend(
+                [
+                    ("Overdue", DueFilter::Overdue),
+                    ("Today", DueFilter::Today),
+                    ("This week", DueFilter::ThisWeek),
+                    ("No date", DueFilter::NoDate),
+                ]
+                .map(|(label, due)| (label.to_owned(), with(&|f| f.due = Some(due)))),
+            ),
+            FilterRow::Category => {
+                choices.push((
+                    "None".to_owned(),
+                    with(&|f| f.category = Some(CategoryFilter::Uncategorized)),
+                ));
+                choices.extend(tasks.categories().into_iter().map(|c| {
+                    (
+                        c.to_string(),
+                        with(&|f| f.category = Some(CategoryFilter::Is(c.clone()))),
+                    )
+                }));
+            }
+            FilterRow::Tag => choices.extend(
+                tasks
+                    .tags()
+                    .into_iter()
+                    .map(|t| (format!("#{t}"), with(&|f| f.tags = vec![t.clone()]))),
+            ),
+            FilterRow::Parent => {
+                choices.push((
+                    "Top level only".to_owned(),
+                    with(&|f| f.parent = Some(ParentFilter::TopLevel)),
+                ));
+                choices.extend(
+                    tasks
+                        .iter()
+                        .filter(|t| !tasks.children(t.id).is_empty())
+                        .map(|t| {
+                            let id = t.id;
+                            (
+                                format!("Under {}", t.title),
+                                with(&|f| f.parent = Some(ParentFilter::SubtreeOf(id))),
+                            )
+                        }),
+                );
+            }
+        }
+        if !choices.iter().any(|(_, filter)| *filter == self.filters) {
+            choices.push(("(set elsewhere)".to_owned(), self.filters.clone()));
+        }
+        choices
+    }
+
+    /// The label of a filter row's current choice.
+    pub fn filter_label(&self, row: FilterRow) -> String {
+        self.filter_choices(row)
+            .into_iter()
+            .find(|(_, filter)| *filter == self.filters)
+            .map(|(label, _)| label)
+            .unwrap_or_default()
+    }
+
+    fn step_filter(&mut self, row: FilterRow, forward: bool) {
+        let choices = self.filter_choices(row);
+        let index = choices
+            .iter()
+            .position(|(_, f)| *f == self.filters)
+            .unwrap_or(0);
+        let next = if forward {
+            (index + 1) % choices.len()
+        } else {
+            (index + choices.len() - 1) % choices.len()
+        };
+        self.filters = choices[next].1.clone();
+        self.selected = 0;
+        self.rebuild();
     }
 
     /// Recomputes the sidebar, rows and problems, keeping the selections where they were.
@@ -525,6 +679,10 @@ impl Desk {
             Mode::EditField(field, input) => self.field_key(key, field, input, clock),
             Mode::Pick(picker) => self.pick_key(key, picker),
             Mode::Confirm(confirm) => self.confirm_key(key, confirm),
+            Mode::Filter(row) => {
+                self.filter_key(key, row);
+                None
+            }
         };
         DeskOutcome::Stay(message)
     }
@@ -545,6 +703,10 @@ impl Desk {
             }
             KeyCode::Char('/') => {
                 self.mode = Mode::Search(TextInput::new(&self.search));
+                None
+            }
+            KeyCode::Char('f') => {
+                self.mode = Mode::Filter(FilterRow::Status);
                 None
             }
             KeyCode::Char('t') => {
@@ -777,6 +939,23 @@ impl Desk {
                 self.mode = Mode::Capture(input);
                 None
             }
+        }
+    }
+
+    fn filter_key(&mut self, key: KeyEvent, row: FilterRow) {
+        match key.code {
+            KeyCode::Esc | KeyCode::Enter | KeyCode::Char('f') => return,
+            KeyCode::Up | KeyCode::Char('k') => self.mode = Mode::Filter(row.step(false)),
+            KeyCode::Down | KeyCode::Char('j') => self.mode = Mode::Filter(row.step(true)),
+            KeyCode::Left | KeyCode::Right => self.step_filter(row, key.code == KeyCode::Right),
+            KeyCode::Char('c') => {
+                self.filters = Filter::default();
+                self.rebuild();
+            }
+            _ => {}
+        }
+        if !matches!(self.mode, Mode::Filter(_)) {
+            self.mode = Mode::Filter(row);
         }
     }
 
@@ -1323,6 +1502,26 @@ mod tests {
         assert_eq!(fixture.titles(), ["Call the bank"]);
         fixture.key(KeyCode::Esc);
         assert_eq!(fixture.titles().len(), 2);
+    }
+
+    #[test]
+    fn filters_by_priority() {
+        let mut fixture = fixture();
+        fixture.capture("Call the bank");
+        fixture.capture("Pack books");
+        fixture.view(&View::All);
+        fixture.keys("f");
+        fixture.key(KeyCode::Down); // Priority
+        fixture.key(KeyCode::Right); // Low
+        fixture.key(KeyCode::Right); // Normal
+        assert_eq!(fixture.desk().filter_label(FilterRow::Priority), "Normal");
+        assert_eq!(fixture.titles().len(), 2);
+        fixture.key(KeyCode::Right); // High
+        assert_eq!(fixture.titles(), Vec::<String>::new());
+        fixture.keys("c");
+        assert_eq!(fixture.titles().len(), 2);
+        fixture.key(KeyCode::Esc);
+        assert!(matches!(fixture.desk().mode, Mode::Normal));
     }
 
     #[test]
