@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use witdo_app::model::{CompletionWarnings, Filter, SubtaskChoice, Task, TaskId, View};
 use witdo_app::{
     AppError, Clock, DirectoryState, Draft, Layout, Opening, Overwrite, ProfileSession, Row,
-    Session, WatchEvent,
+    Session, Theme, WatchEvent,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -206,6 +206,17 @@ impl Model {
     pub fn remember_window_size(&mut self, width: u32, height: u32) {
         if let Err(error) = self.profile.set_window_size(width, height) {
             eprintln!("witdo: the window size could not be saved: {error}");
+        }
+    }
+
+    /// Light or dark, or `None` to follow the system.
+    pub fn theme(&self) -> Option<Theme> {
+        self.profile.config().window.theme
+    }
+
+    pub fn set_theme(&mut self, theme: Option<Theme>) {
+        if let Err(error) = self.profile.set_theme(theme) {
+            self.message = Some(Message::error(&error));
         }
     }
 
@@ -743,6 +754,14 @@ mod tests {
         }
         assert_eq!(model.zoom(), 50);
         assert_eq!(model.zoom_by(None), 100);
+    }
+
+    #[test]
+    fn remembers_the_theme() {
+        let (_dir, mut model) = model();
+        assert_eq!(model.theme(), None);
+        model.set_theme(Some(Theme::Dark));
+        assert_eq!(model.profile.config().window.theme, Some(Theme::Dark));
     }
 
     #[test]

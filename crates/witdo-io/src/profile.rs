@@ -74,6 +74,16 @@ pub struct WindowPreferences {
     /// The desktop app's zoom, in percent.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub zoom: Option<u32>,
+    /// Light or dark; unset follows the system.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub theme: Option<Theme>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Theme {
+    Light,
+    Dark,
 }
 
 impl ProfileConfig {
@@ -235,6 +245,7 @@ mod tests {
         let mut work = ProfileConfig::default();
         work.remember(Path::new("/home/me/work"));
         work.window.width = Some(1200);
+        work.window.theme = Some(Theme::Dark);
         profiles.save(&name("work"), &work).unwrap();
 
         assert_eq!(profiles.load(&name("work")).unwrap(), work);
@@ -244,7 +255,7 @@ mod tests {
         );
         assert_eq!(
             fs::read_to_string(dir.path().join("work/config.toml")).unwrap(),
-            "recent_workspaces = [\"/home/me/work\"]\nlast_workspace = \"/home/me/work\"\n\n[window]\nwidth = 1200\n"
+            "recent_workspaces = [\"/home/me/work\"]\nlast_workspace = \"/home/me/work\"\n\n[window]\nwidth = 1200\ntheme = \"dark\"\n"
         );
     }
 

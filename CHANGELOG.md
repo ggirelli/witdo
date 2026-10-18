@@ -24,6 +24,6 @@ All notable changes to witdo are listed here. The format follows
 - Changes made to task files elsewhere are picked up while witdo is open, and a
   save that would overwrite them asks first.
 - Profiles (`--profile`, `WITDO_PROFILE`) and workspaces (`--workspace`) that
-  keep personal and work tasks apart; the desktop app remembers its window size
-  per profile.
+  keep personal and work tasks apart; the desktop app remembers its window size,
+  zoom (Ctrl+= / Ctrl+- / Ctrl+0) and light or dark theme per profile.
 - A user guide in `docs/`, built with MkDocs (`just docs`).

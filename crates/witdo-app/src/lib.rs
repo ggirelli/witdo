@@ -23,7 +23,7 @@ pub use profile::{Command, Launch, Opening, ProfileSession, parse_args, start, u
 pub use session::{Deleted, Draft, Session};
 use witdo_core::{EditError, EmptyText, TaskId};
 use witdo_io::profile::ProfileError;
-pub use witdo_io::profile::{ProfileConfig, ProfileName, Profiles};
+pub use witdo_io::profile::{ProfileConfig, ProfileName, Profiles, Theme};
 pub use witdo_io::watch::{WatchEvent, Watcher};
 use witdo_io::workspace::WorkspaceError;
 pub use witdo_io::workspace::{DirectoryState, FileProblem, IgnoredReason};

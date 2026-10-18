@@ -9,8 +9,8 @@ use witdo_app::model::{
     SubtaskChoice, Tag, TaskId, Title, View,
 };
 use witdo_app::{
-    DirectoryState, Layout, Linked, ProblemKind, Row, WatchEvent, Watcher, format_tags, parse_due,
-    parse_tags,
+    DirectoryState, Layout, Linked, ProblemKind, Row, Theme, WatchEvent, Watcher, format_tags,
+    parse_due, parse_tags,
 };
 
 use crate::model::{Dialog, Model, Nav, Resolution, Screen};
@@ -59,18 +59,25 @@ fn zoom_keys(mut model: Signal<Model>, e: &KeyboardEvent) {
 pub fn App() -> Element {
     let model = model();
     let model_ref = model.read();
+    let theme = model_ref.theme().map(|theme| match theme {
+        Theme::Light => "light",
+        Theme::Dark => "dark",
+    });
     rsx! {
-        div { class: "app", onkeydown: move |e| zoom_keys(model, &e),
+        div {
+            class: "app",
+            "data-theme": theme,
+            onkeydown: move |e| zoom_keys(model, &e),
             {screen(&model_ref)}
-        }
-        if model_ref.dialog.is_some() {
-            DialogView {}
-        }
-        if let Some(message) = &model_ref.message {
-            div {
-                class: if message.error { "toast error" } else { "toast" },
-                role: "status",
-                "{message.text}"
+            if model_ref.dialog.is_some() {
+                DialogView {}
+            }
+            if let Some(message) = &model_ref.message {
+                div {
+                    class: if message.error { "toast error" } else { "toast" },
+                    role: "status",
+                    "{message.text}"
+                }
             }
         }
     }
@@ -337,6 +344,27 @@ fn Sidebar() -> Element {
                     entries: vec![(Nav::Problems, "Problems".to_owned(), problems)],
                     current,
                     warn: problems > 0,
+                }
+                ThemeSwitch {}
+            }
+        }
+    }
+}
+
+/// Follow the system, or pick light or dark.
+#[component]
+fn ThemeSwitch() -> Element {
+    let mut model = model();
+    let current = model.read().theme();
+    rsx! {
+        div { class: "theme", role: "group", aria_label: "Theme",
+            for (theme, label) in [(None, "System"), (Some(Theme::Light), "Light"), (Some(Theme::Dark), "Dark")] {
+                button {
+                    key: "{label}",
+                    class: if current == theme { "on" },
+                    aria_pressed: current == theme,
+                    onclick: move |_| model.write().set_theme(theme),
+                    "{label}"
                 }
             }
         }
@@ -1198,6 +1226,7 @@ mod tests {
     fn renders_the_workspace() {
         let dir = TempDir::new().unwrap();
         let html = render(model(&dir));
+        assert!(html.contains("System"));
         if let Some(path) = std::env::var_os("WITDO_RENDER_TO") {
             std::fs::write(path, page(&html)).unwrap();
         }

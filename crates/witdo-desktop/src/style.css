@@ -1,45 +1,63 @@
-/* witdo: calm and plain. Sunset amber on deep indigo, as in the brand art. */
-:root {
-  --bg: #f7f5f0;
+/* witdo: calm and plain. Sunset amber on deep indigo, as in the brand art.
+   The theme follows the system unless the person picks one: .app[data-theme]. */
+.app {
+  --bg: #f4f3ef;
   --panel: #ffffff;
-  --text: #1c1d33;
-  --muted: #6b6c80;
-  --line: #e2e0d8;
-  --side: #171a3d;
-  --side-text: #e9e6f5;
-  --side-muted: #9c9cc0;
+  --text: #191a2e;
+  --muted: #64657a;
+  --line: #dddbd3;
+  --side: #0c0e24;
+  --side-text: #e4e2f0;
+  --side-muted: #8e8eb2;
   --accent: #e0902a;
-  --accent-text: #171a3d;
-  --select: #fbeedb;
+  --accent-text: #0c0e24;
+  --select: #f8ead6;
   --danger: #b3261e;
   --warn: #9a6200;
   --ok: #2e7d4f;
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+.app[data-theme="dark"] {
+  --bg: #0b0d1f;
+  --panel: #111329;
+  --text: #e6e5f0;
+  --muted: #9797b5;
+  --line: #20233f;
+  --side: #07081a;
+  --side-muted: #7f80a6;
+  --select: #22234a;
+  --danger: #ff8a80;
+  --warn: #f2a93f;
+  --ok: #7fd1a0;
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14162f;
-    --panel: #1b1e40;
-    --text: #ecebf5;
-    --muted: #a3a3c2;
-    --line: #2d3160;
-    --side: #0f1129;
-    --select: #33305a;
+  .app:not([data-theme="light"]) {
+    --bg: #0b0d1f;
+    --panel: #111329;
+    --text: #e6e5f0;
+    --muted: #9797b5;
+    --line: #20233f;
+    --side: #07081a;
+    --side-muted: #7f80a6;
+    --select: #22234a;
     --danger: #ff8a80;
-    --warn: #f6b04a;
+    --warn: #f2a93f;
     --ok: #7fd1a0;
+    color-scheme: dark;
   }
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: #0b0d1f;
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 #main, .app { height: 100%; }
+.app { background: var(--bg); color: var(--text); }
 button, input, select, textarea { font: inherit; color: inherit; }
 input, select, textarea {
   background: var(--panel);
@@ -87,7 +105,13 @@ h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color
 .nav-item.current { background: rgba(246, 176, 74, 0.18); color: #f6b04a; }
 .nav-item .count { color: var(--side-muted); }
 .nav-item.warn .count { color: #f6b04a; font-weight: 600; }
-.nav-bottom { margin-top: auto; padding-top: 1rem; }
+.nav-bottom { margin-top: auto; padding-top: 1rem; display: grid; gap: 0.75rem; }
+.theme { display: flex; padding: 0 0.5rem; }
+.theme button { flex: 1; background: transparent; border-color: #2a2c52; color: var(--side-muted); border-radius: 0; padding: 0.2rem 0.4rem; font-size: 0.8rem; }
+.theme button:first-child { border-radius: 6px 0 0 6px; }
+.theme button:last-child { border-radius: 0 6px 6px 0; }
+.theme button + button { margin-left: -1px; }
+.theme button.on { background: rgba(246, 176, 74, 0.18); color: #f6b04a; }
 
 .main { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--line); }
 .toolbar { display: flex; gap: 0.5rem; padding: 0.75rem; border-bottom: 1px solid var(--line); }

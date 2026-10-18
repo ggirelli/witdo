@@ -1,7 +1,7 @@
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-use witdo_io::profile::{ProfileConfig, ProfileName, Profiles};
+use witdo_io::profile::{ProfileConfig, ProfileName, Profiles, Theme};
 use witdo_io::workspace::{self, DirectoryState, Workspace};
 
 use crate::{AppError, Clock, Session};
@@ -111,6 +111,16 @@ impl ProfileSession {
     /// When the profile cannot be saved.
     pub fn set_zoom(&mut self, percent: u32) -> Result<(), AppError> {
         self.config.window.zoom = Some(percent);
+        self.save()
+    }
+
+    /// Remembers the desktop app's theme; `None` follows the system.
+    ///
+    /// # Errors
+    ///
+    /// When the profile cannot be saved.
+    pub fn set_theme(&mut self, theme: Option<Theme>) -> Result<(), AppError> {
+        self.config.window.theme = theme;
         self.save()
     }
 

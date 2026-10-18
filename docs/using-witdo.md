@@ -69,6 +69,11 @@ witdo stops and asks: **reload** (your change is dropped) or **overwrite**.
 
 ### Desktop app
 
+The switch at the bottom of the sidebar picks a **light** or **dark** theme,
+or follows the **system**; like the zoom and the window size, it is
+remembered per profile.
+
+
 | Key          | Does                                     |
 | ------------ | ---------------------------------------- |
 | `n`          | Add a task (focus the capture field)     |
