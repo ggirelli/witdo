@@ -1,6 +1,7 @@
 //! Use cases: creating, editing, completing, reopening and deleting tasks, and handling
 //! workspaces and profiles. The UI talks to this crate only.
 
+mod problems;
 mod session;
 
 /// The task model, for the UIs.
@@ -14,6 +15,7 @@ use std::sync::Arc;
 use jiff::Timestamp;
 use jiff::civil::Date;
 use jiff::tz::TimeZone;
+pub use problems::{ProblemKind, ProblemReport};
 pub use session::{Deleted, Draft, Session};
 use witdo_core::{EditError, EmptyText, TaskId};
 pub use witdo_io::watch::{WatchEvent, Watcher};
