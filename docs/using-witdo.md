@@ -78,6 +78,8 @@ witdo stops and asks: **reload** (your change is dropped) or **overwrite**.
 | `Esc`        | Close, clear the search, or leave a field |
 | `Ctrl+Enter` | Mark done or reopen                      |
 | `Delete`     | Delete the selected task                 |
+| `Ctrl` `+` / `Ctrl` `-` | Zoom in / out (remembered per profile) |
+| `Ctrl` `0`   | Back to 100%                             |
 
 ### Terminal app
 

@@ -82,6 +82,13 @@ fn Root() -> Element {
             .expect("the model is handed over once, at launch");
         Signal::new(model)
     });
+    // Applies the profile's zoom once the window is up.
+    use_hook(move || {
+        let zoom = model.read().zoom();
+        if zoom != 100 {
+            window().set_zoom_level(f64::from(zoom) / 100.0);
+        }
+    });
     // Remembers the window's size in the profile for next time.
     use_wry_event_handler(move |event, _| {
         if let Event::WindowEvent {

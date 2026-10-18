@@ -104,6 +104,16 @@ impl ProfileSession {
         self.save()
     }
 
+    /// Remembers the desktop app's zoom, in percent.
+    ///
+    /// # Errors
+    ///
+    /// When the profile cannot be saved.
+    pub fn set_zoom(&mut self, percent: u32) -> Result<(), AppError> {
+        self.config.window.zoom = Some(percent);
+        self.save()
+    }
+
     fn save(&self) -> Result<(), AppError> {
         Ok(self.profiles.save(&self.name, &self.config)?)
     }

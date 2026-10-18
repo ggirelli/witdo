@@ -71,6 +71,9 @@ pub struct WindowPreferences {
     pub width: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub height: Option<u32>,
+    /// The desktop app's zoom, in percent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub zoom: Option<u32>,
 }
 
 impl ProfileConfig {

@@ -29,13 +29,30 @@ fn scroll_to_selected() {
     );
 }
 
-/// Keys typed into a field stay there, except Escape, which leaves the field.
+/// Keys typed into a field stay there, except Escape, which leaves the field, and Ctrl
+/// shortcuts (zoom, mark done), which the app handles.
 fn field_keys(e: &KeyboardEvent) {
     if e.key() == Key::Escape {
         document::eval("document.activeElement?.blur()");
-    } else if !(e.key() == Key::Enter && e.modifiers().ctrl()) {
+    } else if !e.modifiers().ctrl() {
         e.stop_propagation();
     }
+}
+
+/// Ctrl+= or Ctrl++ zooms in, Ctrl+- out, Ctrl+0 back to 100%, anywhere in the window.
+fn zoom_keys(mut model: Signal<Model>, e: &KeyboardEvent) {
+    if !e.modifiers().ctrl() {
+        return;
+    }
+    let step = match e.key() {
+        Key::Character(c) if c == "=" || c == "+" => Some(1),
+        Key::Character(c) if c == "-" => Some(-1),
+        Key::Character(c) if c == "0" => None,
+        _ => return,
+    };
+    e.prevent_default();
+    let zoom = model.write().zoom_by(step);
+    dioxus::desktop::window().set_zoom_level(f64::from(zoom) / 100.0);
 }
 
 #[component]
@@ -43,12 +60,8 @@ pub fn App() -> Element {
     let model = model();
     let model_ref = model.read();
     rsx! {
-        match &model_ref.screen {
-            Screen::Choose { confirm } => rsx! { Chooser { confirm: confirm.clone() } },
-            Screen::Desk(desk) => {
-                let root = desk.session.workspace().root().display().to_string();
-                rsx! { DeskView { key: "{root}" } }
-            }
+        div { class: "app", onkeydown: move |e| zoom_keys(model, &e),
+            {screen(&model_ref)}
         }
         if model_ref.dialog.is_some() {
             DialogView {}
@@ -58,6 +71,18 @@ pub fn App() -> Element {
                 class: if message.error { "toast error" } else { "toast" },
                 role: "status",
                 "{message.text}"
+            }
+        }
+    }
+}
+
+fn screen(model: &Model) -> Element {
+    rsx! {
+        match &model.screen {
+            Screen::Choose { confirm } => rsx! { Chooser { confirm: confirm.clone() } },
+            Screen::Desk(desk) => {
+                let root = desk.session.workspace().root().display().to_string();
+                rsx! { DeskView { key: "{root}" } }
             }
         }
     }

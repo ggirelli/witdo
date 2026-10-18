@@ -39,7 +39,7 @@ body {
   color: var(--text);
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
-#main { height: 100%; }
+#main, .app { height: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
 input, select, textarea {
   background: var(--panel);

@@ -30,6 +30,10 @@ impl Message {
     }
 }
 
+const ZOOM_STEP: i32 = 10;
+const MIN_ZOOM: u32 = 50;
+const MAX_ZOOM: u32 = 300;
+
 pub struct Model {
     pub profile: ProfileSession,
     pub clock: Clock,
@@ -203,6 +207,25 @@ impl Model {
         if let Err(error) = self.profile.set_window_size(width, height) {
             eprintln!("witdo: the window size could not be saved: {error}");
         }
+    }
+
+    /// The zoom, in percent: the profile's, or 100.
+    pub fn zoom(&self) -> u32 {
+        self.profile.config().window.zoom.unwrap_or(100)
+    }
+
+    /// Zooms in or out by a step (or back to 100% with `None`), within 50% to 300%, and
+    /// remembers it in the profile. Returns the new zoom.
+    pub fn zoom_by(&mut self, step: Option<i32>) -> u32 {
+        let zoom = step.map_or(100, |step| {
+            self.zoom()
+                .saturating_add_signed(step * ZOOM_STEP)
+                .clamp(MIN_ZOOM, MAX_ZOOM)
+        });
+        if let Err(error) = self.profile.set_zoom(zoom) {
+            self.message = Some(Message::error(&error));
+        }
+        zoom
     }
 
     // Looking around.
@@ -707,6 +730,19 @@ mod tests {
         assert_eq!(desk.active_filters(), 1);
         let titles: Vec<String> = desk.rows().into_iter().map(|row| row.title).collect();
         assert_eq!(titles, ["Pack books"]);
+    }
+
+    #[test]
+    fn zooms_within_bounds_and_remembers() {
+        let (_dir, mut model) = model();
+        assert_eq!(model.zoom(), 100);
+        assert_eq!(model.zoom_by(Some(1)), 110);
+        assert_eq!(model.profile.config().window.zoom, Some(110));
+        for _ in 0..30 {
+            model.zoom_by(Some(-1));
+        }
+        assert_eq!(model.zoom(), 50);
+        assert_eq!(model.zoom_by(None), 100);
     }
 
     #[test]
