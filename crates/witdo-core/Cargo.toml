@@ -1,0 +1,13 @@
+[package]
+name = "witdo-core"
+description = "witdo's task model: validation, hierarchy and dependency graph, views, search and filters"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

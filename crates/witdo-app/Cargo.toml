@@ -1,0 +1,15 @@
+[package]
+name = "witdo-app"
+description = "witdo's use cases: task lifecycle, workspaces and profiles"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+witdo-core.workspace = true
+witdo-store.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,23 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+repository = "https://github.com/ggirelli/witdo"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+witdo-core = { path = "crates/witdo-core" }
+witdo-store = { path = "crates/witdo-store" }
+witdo-app = { path = "crates/witdo-app" }
+dioxus = { version = "0.7", features = ["desktop"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }

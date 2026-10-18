@@ -1,0 +1,6 @@
+/target
+/.dioxus
+
+# Full-size originals of the brand artwork; the committed copies are compressed.
+/assets/brand/witdo-banner.png
+/assets/brand/witdo-icon.png

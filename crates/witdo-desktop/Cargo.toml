@@ -1,0 +1,19 @@
+[package]
+name = "witdo-desktop"
+description = "witdo: a calm, private, local-first task manager"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+dioxus.workspace = true
+witdo-app.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "witdo"
+path = "src/main.rs"
