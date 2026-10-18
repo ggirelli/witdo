@@ -2,6 +2,7 @@
 //! workspaces and profiles. The UI talks to this crate only.
 
 mod problems;
+mod profile;
 mod session;
 
 /// The task model, for the UIs.
@@ -16,8 +17,11 @@ use jiff::Timestamp;
 use jiff::civil::Date;
 use jiff::tz::TimeZone;
 pub use problems::{ProblemKind, ProblemReport};
+pub use profile::{Command, Launch, Opening, ProfileSession, parse_args, start, usage};
 pub use session::{Deleted, Draft, Session};
 use witdo_core::{EditError, EmptyText, TaskId};
+use witdo_io::profile::ProfileError;
+pub use witdo_io::profile::{ProfileConfig, ProfileName, Profiles};
 pub use witdo_io::watch::{WatchEvent, Watcher};
 use witdo_io::workspace::WorkspaceError;
 pub use witdo_io::workspace::{DirectoryState, FileProblem, IgnoredReason};
@@ -41,6 +45,11 @@ pub enum AppError {
     Write(WriteError),
     #[error(transparent)]
     Workspace(#[from] WorkspaceError),
+    #[error(transparent)]
+    Profile(#[from] ProfileError),
+    /// The command line was not understood.
+    #[error("{0}")]
+    Usage(String),
 }
 
 impl AppError {
