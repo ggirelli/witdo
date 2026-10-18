@@ -77,12 +77,12 @@ fn run(terminal: &mut DefaultTerminal, app: &mut App) -> io::Result<()> {
     }
 }
 
-/// Runs `$VISUAL` or `$EDITOR` (falling back to `vi`) on a file and waits for it.
+/// Runs `$VISUAL` or `$EDITOR` (falling back to `nano`) on a file and waits for it.
 fn edit(path: &Path) -> io::Result<ExitStatus> {
     let editor = std::env::var("VISUAL")
         .or_else(|_| std::env::var("EDITOR"))
-        .unwrap_or_else(|_| "vi".to_owned());
+        .unwrap_or_else(|_| "nano".to_owned());
     let mut words = editor.split_whitespace();
-    let program = words.next().unwrap_or("vi");
+    let program = words.next().unwrap_or("nano");
     Process::new(program).args(words).arg(path).status()
 }

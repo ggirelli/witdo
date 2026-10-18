@@ -139,7 +139,7 @@ Decided 2026-10-18.
   the file changed since, even if the change was already reloaded.
 - **Notes:** the desktop app edits them in a plain text area. The terminal app
   opens the task's own Markdown file in `$VISUAL` / `$EDITOR` (falling back to
-  `vi`), then reloads it; the file stays the single source of truth.
+  `nano`), then reloads it; the file stays the single source of truth.
 - **Keys:** the terminal app adds `x`/Space for done (most terminals cannot
   report Ctrl+Enter), `d` delete, `e` edit file, `t` tree, `r` reload,
   `w` switch workspace and `?` help, besides the keys of §11.

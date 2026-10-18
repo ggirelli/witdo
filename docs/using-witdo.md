@@ -100,3 +100,6 @@ witdo stops and asks: **reload** (your change is dropped) or **overwrite**.
 | `q`                   | Quit                                          |
 
 Due dates can be typed as `YYYY-MM-DD`, `today` or `tomorrow`.
+
+`e` opens the task's Markdown file in `$VISUAL`, or else `$EDITOR`, or else
+`nano`; witdo reloads the file when the editor closes.
