@@ -197,6 +197,14 @@ impl Model {
         });
     }
 
+    /// Saves the window's size in the profile. It runs as the window closes, so a failure can
+    /// only be reported on the terminal.
+    pub fn remember_window_size(&mut self, width: u32, height: u32) {
+        if let Err(error) = self.profile.set_window_size(width, height) {
+            eprintln!("witdo: the window size could not be saved: {error}");
+        }
+    }
+
     // Looking around.
 
     pub fn set_nav(&mut self, nav: Nav) {

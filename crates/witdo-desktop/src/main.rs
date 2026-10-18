@@ -6,7 +6,8 @@ mod view;
 use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
 
-use dioxus::desktop::{Config, LogicalSize, WindowBuilder};
+use dioxus::desktop::tao::event::{Event, WindowEvent};
+use dioxus::desktop::{Config, LogicalSize, WindowBuilder, use_wry_event_handler, window};
 use dioxus::prelude::*;
 use witdo_app::{Clock, Command, Profiles, parse_args, start, usage};
 
@@ -72,7 +73,7 @@ fn main() -> ExitCode {
 #[component]
 fn Root() -> Element {
     let startup = use_context::<Startup>();
-    use_context_provider(move || {
+    let mut model = use_context_provider(move || {
         let model = startup
             .0
             .lock()
@@ -80,6 +81,18 @@ fn Root() -> Element {
             .and_then(|mut model| model.take())
             .expect("the model is handed over once, at launch");
         Signal::new(model)
+    });
+    // Remembers the window's size in the profile for next time.
+    use_wry_event_handler(move |event, _| {
+        if let Event::WindowEvent {
+            event: WindowEvent::CloseRequested,
+            ..
+        } = event
+        {
+            let window = &window().window;
+            let size: LogicalSize<u32> = window.inner_size().to_logical(window.scale_factor());
+            model.write().remember_window_size(size.width, size.height);
+        }
     });
     rsx! { view::App {} }
 }
