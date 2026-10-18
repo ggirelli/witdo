@@ -30,9 +30,19 @@ const KNOWN_KEYS: [&str; 12] = [
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Extras {
     unknown: Vec<(Yaml, Yaml)>,
-    /// `None` for a task witdo creates; then notes, once there are any, start after a blank
-    /// line.
+    /// `None` for a task witdo creates, or a file that ends with its front matter; then
+    /// notes, once there are any, start after a blank line.
     separator: Option<String>,
+}
+
+impl Extras {
+    /// Settles the line break before the notes once a task is written with some, so that
+    /// later writes match what reading the file back would give.
+    pub(crate) fn written(&mut self, task: &Task) {
+        if self.separator.is_none() && !task.body.is_empty() {
+            self.separator = Some("\n".to_owned());
+        }
+    }
 }
 
 /// Why a file could not be read as a task.
@@ -114,7 +124,8 @@ pub fn parse(text: &str) -> Result<(Task, Extras), ParseError> {
         task,
         Extras {
             unknown,
-            separator: Some(separator.to_owned()),
+            // With nothing after the front matter there is no line break to keep yet.
+            separator: (!rest.is_empty()).then(|| separator.to_owned()),
         },
     ))
 }
@@ -504,6 +515,21 @@ Draft the outline first. Ask Maria for last year's numbers.
             "Draft the outline first. Ask Maria for last year's numbers.\n"
         );
         assert_eq!(serialize(&task, &extras).unwrap(), text);
+    }
+
+    #[test]
+    fn notes_added_to_a_file_without_any_start_after_a_blank_line() {
+        let text = EXAMPLE.replace(
+            "\nDraft the outline first. Ask Maria for last year's numbers.\n",
+            "",
+        );
+        let (mut task, mut extras) = parse(&text).unwrap();
+        assert_eq!(serialize(&task, &extras).unwrap(), text);
+        task.body = "Notes\n".into();
+        let written = serialize(&task, &extras).unwrap();
+        assert!(written.ends_with("---\n\nNotes\n"), "{written}");
+        extras.written(&task);
+        assert_eq!(parse(&written).unwrap().1, extras);
     }
 
     #[test]

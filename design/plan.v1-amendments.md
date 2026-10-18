@@ -104,3 +104,21 @@ Amends §4 and §7. Decided 2026-10-18.
   `.witdo/tmp/` if they are missing, so deleting `.witdo/tmp/` never matters
   (acceptance criterion 4). Settings from a newer schema version are refused
   rather than guessed at.
+
+## Writing in detail
+
+Amends §5, §6 and §7. Decided 2026-10-18.
+
+- **Renaming on a title change** applies to names witdo gave
+  (`<slug>--<short id>.md`, with this task's short ID). A file the person
+  named themselves, such as `Bank.md`, keeps its name.
+- **Order of a rename:** the old file is renamed to the new name first, then
+  the new contents replace it. A crash in between leaves the old contents
+  under the new name, never two files with the same ID.
+- **The trash** names files `<old name without .md>--deleted-<UTC time>.md`,
+  adding `-2`, `-3`… if that name is taken.
+- **Conflicts** also cover files deleted outside witdo since they were loaded:
+  saving or deleting then stops and asks, like for a changed file; overwriting
+  a deleted file writes it again.
+- **Durability:** files are fsynced before they are moved into place; the
+  directory is fsynced after on Unix, as a best effort.
