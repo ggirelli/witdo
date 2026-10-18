@@ -90,10 +90,14 @@ jj st                          # inspect working-copy changes
 jj log                         # inspect history
 jj describe -m "feat: …"       # describe the current change
 jj new                         # start a new change on top
-jj bookmark set main -r @-     # move main to the finished change
-jj git push                    # publish main
+jj git push -c @-              # push the finished change to a new branch
+gh pr create --fill            # open a pull request for it
+jj git fetch                   # bring in main once it is merged
 jj undo                        # undo the last jj operation
 ```
+
+`main` is protected: changes land through pull requests, squashed or rebased
+so history stays linear, once the checks pass. Commits must be signed.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the coding and commit style.
 
