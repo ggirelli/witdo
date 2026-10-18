@@ -9,6 +9,7 @@ publish.workspace = true
 
 [dependencies]
 deunicode = "1"
+directories = "6"
 jiff.workspace = true
 notify-debouncer-full = "0.7"
 serde = { version = "1", features = ["derive"] }
