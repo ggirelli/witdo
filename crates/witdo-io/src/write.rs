@@ -328,7 +328,10 @@ mod tests {
             .save(&task, &file, Overwrite::IfUnchanged)
             .unwrap();
         assert_eq!(saved.name, "call-the-bank-about-the-loan--4xk9q2mb.md");
-        assert_eq!(names(&workspace.tasks_dir()), std::slice::from_ref(&saved.name));
+        assert_eq!(
+            names(&workspace.tasks_dir()),
+            std::slice::from_ref(&saved.name)
+        );
         assert_eq!(workspace.read(&saved.name).unwrap().task, task);
     }
 
