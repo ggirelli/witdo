@@ -8,8 +8,13 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+jiff.workspace = true
+thiserror.workspace = true
 witdo-core.workspace = true
 witdo-io.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+tempfile = "3"

@@ -6485,6 +6485,9 @@ checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 name = "witdo-app"
 version = "0.1.0"
 dependencies = [
+ "jiff",
+ "tempfile",
+ "thiserror 2.0.21",
  "witdo-core",
  "witdo-io",
 ]

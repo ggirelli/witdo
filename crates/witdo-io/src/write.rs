@@ -133,7 +133,12 @@ impl Workspace {
         Ok(Some(name))
     }
 
-    fn check_unchanged(&self, file: &TaskFile) -> Result<(), WriteError> {
+    /// Checks that a task's file is as witdo last read or wrote it.
+    ///
+    /// # Errors
+    ///
+    /// A conflict when it changed or went away outside witdo, or when it cannot be read.
+    pub fn check_unchanged(&self, file: &TaskFile) -> Result<(), WriteError> {
         let path = self.tasks_dir().join(&file.name);
         match fs::read(&path) {
             Ok(bytes) if content_hash(&bytes) == file.hash => Ok(()),

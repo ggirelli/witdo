@@ -296,6 +296,22 @@ impl Workspace {
     }
 }
 
+impl Workspace {
+    /// The hash of a file in `tasks/` as it is now, or `None` when there is no such file.
+    ///
+    /// # Errors
+    ///
+    /// When the file exists but cannot be read.
+    pub fn file_hash(&self, name: &str) -> Result<Option<u64>, WorkspaceError> {
+        let path = self.tasks_dir().join(name);
+        match fs::read(&path) {
+            Ok(bytes) => Ok(Some(content_hash(&bytes))),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(WorkspaceError::io(&path, "read")(error)),
+        }
+    }
+}
+
 /// Whether a name in `tasks/` is one witdo reads as a task: `*.md`, not hidden.
 #[must_use]
 pub fn is_task_file_name(name: &str) -> bool {
@@ -552,6 +568,17 @@ mod tests {
             fs::read_to_string(workspace.tasks_dir().join("a-broken.md")).unwrap(),
             "---\ntitle: x\n---\n"
         );
+    }
+
+    #[test]
+    fn file_hash_tells_present_files_from_missing_ones() {
+        let (_dir, workspace) = workspace();
+        put(&workspace, "a.md", TASK);
+        assert_eq!(
+            workspace.file_hash("a.md").unwrap(),
+            Some(content_hash(TASK.as_bytes()))
+        );
+        assert_eq!(workspace.file_hash("b.md").unwrap(), None);
     }
 
     #[test]
