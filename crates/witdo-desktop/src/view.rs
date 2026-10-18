@@ -40,7 +40,7 @@ fn field_keys(e: &KeyboardEvent) {
 }
 
 /// Ctrl+= or Ctrl++ zooms in, Ctrl+- out, Ctrl+0 back to 100%, anywhere in the window.
-fn zoom_keys(mut model: Signal<Model>, e: &KeyboardEvent) {
+fn zoom_keys(model: Signal<Model>, e: &KeyboardEvent) {
     if !e.modifiers().ctrl() {
         return;
     }
@@ -51,6 +51,11 @@ fn zoom_keys(mut model: Signal<Model>, e: &KeyboardEvent) {
         _ => return,
     };
     e.prevent_default();
+    zoom(model, step);
+}
+
+/// Zooms in or out by a step, or back to 100% with `None`, and remembers it.
+fn zoom(mut model: Signal<Model>, step: Option<i32>) {
     let zoom = model.write().zoom_by(step);
     dioxus::desktop::window().set_zoom_level(f64::from(zoom) / 100.0);
 }
@@ -253,30 +258,36 @@ fn DeskView() -> Element {
         e.prevent_default();
     };
 
-    let is_problems = model
-        .read()
-        .desk()
-        .is_some_and(|desk| desk.nav == Nav::Problems);
+    let nav = model.read().desk().map(|desk| desk.nav.clone());
     rsx! {
         div {
             class: "desk",
+            // Pages without a task panel take its room too.
+            class: if matches!(nav, Some(Nav::Settings | Nav::Problems)) { "wide" },
             tabindex: 0,
             onmounted: move |e| async move {
                 let _ = e.set_focus(true).await;
             },
             onkeydown,
             Sidebar {}
-            main { class: "main",
-                Toolbar {}
-                FilterBar {}
-                if is_problems {
-                    ProblemsList {}
-                } else {
-                    TaskList {}
-                }
-            }
-            if !is_problems {
-                DetailPanel {}
+            match nav {
+                Some(Nav::Settings) => rsx! {
+                    main { class: "main", Settings {} }
+                },
+                Some(Nav::Problems) => rsx! {
+                    main { class: "main",
+                        Toolbar {}
+                        ProblemsList {}
+                    }
+                },
+                _ => rsx! {
+                    main { class: "main",
+                        Toolbar {}
+                        FilterBar {}
+                        TaskList {}
+                    }
+                    DetailPanel {}
+                },
             }
         }
     }
@@ -342,10 +353,77 @@ fn Sidebar() -> Element {
             div { class: "nav-bottom",
                 NavGroup {
                     entries: vec![(Nav::Problems, "Problems".to_owned(), problems)],
-                    current,
+                    current: current.clone(),
                     warn: problems > 0,
                 }
-                ThemeSwitch {}
+                button {
+                    class: if current == Nav::Settings { "nav-item current" } else { "nav-item" },
+                    onclick: move |_| model.write().set_nav(Nav::Settings),
+                    span { class: "with-icon",
+                        Cog {}
+                        "Settings"
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// A cog, drawn in the text colour.
+#[component]
+fn Cog() -> Element {
+    rsx! {
+        svg {
+            class: "icon",
+            view_box: "0 0 24 24",
+            width: "16",
+            height: "16",
+            fill: "none",
+            stroke: "currentColor",
+            stroke_width: "2",
+            stroke_linecap: "round",
+            stroke_linejoin: "round",
+            "aria-hidden": "true",
+            circle { cx: "12", cy: "12", r: "3" }
+            path { d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" }
+        }
+    }
+}
+
+/// Preferences, saved in the profile.
+#[component]
+fn Settings() -> Element {
+    let model = model();
+    let model_ref = model.read();
+    let zoom_level = model_ref.zoom();
+    let profile = model_ref.profile.name().to_string();
+    let workspace = model_ref
+        .desk()
+        .map(|desk| desk.session.workspace().root().display().to_string())
+        .unwrap_or_default();
+    rsx! {
+        div { class: "settings",
+            h2 { class: "with-icon", Cog {} "Settings" }
+            p { class: "muted", "Saved in the profile “{profile}”." }
+            section { class: "card",
+                h3 { "Appearance" }
+                div { class: "setting",
+                    span { "Theme" }
+                    ThemeSwitch {}
+                }
+                div { class: "setting",
+                    span { "Zoom" }
+                    div { class: "segmented", role: "group", aria_label: "Zoom",
+                        button { title: "Zoom out (Ctrl+-)", onclick: move |_| zoom(model, Some(-1)), "−" }
+                        button { class: "on", title: "Back to 100% (Ctrl+0)", onclick: move |_| zoom(model, None), "{zoom_level}%" }
+                        button { title: "Zoom in (Ctrl+=)", onclick: move |_| zoom(model, Some(1)), "+" }
+                    }
+                }
+            }
+            section { class: "card",
+                h3 { "Workspace" }
+                p { code { "{workspace}" } }
+                p { class: "muted small", "Use Switch… at the top of the sidebar to open another one." }
             }
         }
     }
@@ -357,7 +435,7 @@ fn ThemeSwitch() -> Element {
     let mut model = model();
     let current = model.read().theme();
     rsx! {
-        div { class: "theme", role: "group", aria_label: "Theme",
+        div { class: "segmented", role: "group", aria_label: "Theme",
             for (theme, label) in [(None, "System"), (Some(Theme::Light), "Light"), (Some(Theme::Dark), "Dark")] {
                 button {
                     key: "{label}",
@@ -1226,7 +1304,11 @@ mod tests {
     fn renders_the_workspace() {
         let dir = TempDir::new().unwrap();
         let html = render(model(&dir));
-        assert!(html.contains("System"));
+        assert!(html.contains("Settings"));
+        assert!(
+            !html.contains("System"),
+            "the theme switch is on the settings page"
+        );
         if let Some(path) = std::env::var_os("WITDO_RENDER_TO") {
             std::fs::write(path, page(&html)).unwrap();
         }
@@ -1239,6 +1321,27 @@ mod tests {
             "Problems",
             "Top level only",
             "Mark done",
+        ] {
+            assert!(html.contains(expected), "{expected} missing");
+        }
+    }
+
+    #[test]
+    fn renders_the_settings() {
+        let dir = TempDir::new().unwrap();
+        let mut model = model(&dir);
+        model.set_nav(Nav::Settings);
+        let html = render(model);
+        if let Some(path) = std::env::var_os("WITDO_RENDER_SETTINGS_TO") {
+            std::fs::write(path, page(&html)).unwrap();
+        }
+        for expected in [
+            "Appearance",
+            "System",
+            "Light",
+            "Dark",
+            "100%",
+            "Saved in the profile",
         ] {
             assert!(html.contains(expected), "{expected} missing");
         }

@@ -69,9 +69,9 @@ witdo stops and asks: **reload** (your change is dropped) or **overwrite**.
 
 ### Desktop app
 
-The switch at the bottom of the sidebar picks a **light** or **dark** theme,
-or follows the **system**; like the zoom and the window size, it is
-remembered per profile.
+**Settings**, below Problems in the sidebar, picks a **light** or **dark**
+theme or follows the **system**, and sets the zoom; like the window size,
+they are remembered per profile.
 
 
 | Key          | Does                                     |

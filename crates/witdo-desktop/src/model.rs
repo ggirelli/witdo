@@ -72,6 +72,7 @@ pub struct Desk {
 pub enum Nav {
     View(View),
     Problems,
+    Settings,
 }
 
 pub enum Dialog {
@@ -539,7 +540,7 @@ impl Desk {
     pub fn rows(&self) -> Vec<Row> {
         match &self.nav {
             Nav::View(view) => self.session.rows(view, &self.filter(), self.layout),
-            Nav::Problems => Vec::new(),
+            Nav::Problems | Nav::Settings => Vec::new(),
         }
     }
 

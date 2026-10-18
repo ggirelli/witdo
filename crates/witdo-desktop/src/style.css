@@ -95,6 +95,8 @@ h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color
 
 /* The open workspace: sidebar, list, detail. */
 .desk { display: grid; grid-template-columns: 15rem minmax(20rem, 1fr) minmax(20rem, 26rem); height: 100vh; outline: none; }
+.desk.wide { grid-template-columns: 15rem minmax(20rem, 1fr); }
+.desk.wide .main { border-right: none; }
 .sidebar { background: var(--side); color: var(--side-text); padding: 1rem 0.5rem; display: flex; flex-direction: column; overflow-y: auto; }
 .sidebar h3 { color: var(--side-muted); padding: 0 0.5rem; }
 .workspace { display: grid; gap: 0.1rem; padding: 0 0.5rem 1rem; }
@@ -106,12 +108,14 @@ h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color
 .nav-item .count { color: var(--side-muted); }
 .nav-item.warn .count { color: #f6b04a; font-weight: 600; }
 .nav-bottom { margin-top: auto; padding-top: 1rem; display: grid; gap: 0.75rem; }
-.theme { display: flex; padding: 0 0.5rem; }
-.theme button { flex: 1; background: transparent; border-color: #2a2c52; color: var(--side-muted); border-radius: 0; padding: 0.2rem 0.4rem; font-size: 0.8rem; }
-.theme button:first-child { border-radius: 6px 0 0 6px; }
-.theme button:last-child { border-radius: 0 6px 6px 0; }
-.theme button + button { margin-left: -1px; }
-.theme button.on { background: rgba(246, 176, 74, 0.18); color: #f6b04a; }
+.icon { flex: none; }
+.with-icon { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+/* Settings. */
+.settings { padding: 1.5rem; display: grid; gap: 1rem; max-width: 36rem; overflow-y: auto; }
+.settings .card { display: grid; gap: 0.75rem; }
+.settings h3, .settings h2, .settings p { margin: 0; }
+.setting { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 
 .main { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--line); }
 .toolbar { display: flex; gap: 0.5rem; padding: 0.75rem; border-bottom: 1px solid var(--line); }
