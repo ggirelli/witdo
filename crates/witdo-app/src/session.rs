@@ -32,6 +32,13 @@ impl Draft {
     pub fn id(&self) -> TaskId {
         self.task.id
     }
+
+    /// Which version of the task's file the draft started from; it changes whenever the file
+    /// does.
+    #[must_use]
+    pub fn revision(&self) -> u64 {
+        self.revision
+    }
 }
 
 /// What deleting a task did.
