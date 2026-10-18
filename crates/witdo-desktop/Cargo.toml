@@ -9,6 +9,7 @@ publish.workspace = true
 
 [dependencies]
 dioxus.workspace = true
+tokio = { version = "1", default-features = false, features = ["sync"] }
 witdo-app.workspace = true
 
 [lints]
@@ -17,3 +18,7 @@ workspace = true
 [[bin]]
 name = "witdo"
 path = "src/main.rs"
+
+[dev-dependencies]
+dioxus-ssr = "0.7"
+tempfile = "3"
