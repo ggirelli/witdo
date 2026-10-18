@@ -911,6 +911,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "deunicode"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "abd57806937c9cc163efc8ea3910e00a62e2aeb0b8119f1793a978088f8f6b04"
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6367,6 +6373,7 @@ dependencies = [
 name = "witdo-io"
 version = "0.1.0"
 dependencies = [
+ "deunicode",
  "jiff",
  "thiserror 2.0.21",
  "witdo-core",

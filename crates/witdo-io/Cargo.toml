@@ -8,6 +8,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+deunicode = "1"
 jiff.workspace = true
 thiserror.workspace = true
 witdo-core.workspace = true
