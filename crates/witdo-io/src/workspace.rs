@@ -123,7 +123,7 @@ impl Workspace {
         })?;
         fs::write(&path, text).map_err(WorkspaceError::io(&path, "written"))?;
         Ok(Self {
-            root: root.to_owned(),
+            root: canonical(root)?,
             settings,
         })
     }
@@ -156,7 +156,7 @@ impl Workspace {
             });
         }
         let workspace = Self {
-            root: root.to_owned(),
+            root: canonical(root)?,
             settings,
         };
         for dir in [
@@ -169,6 +169,7 @@ impl Workspace {
         Ok(workspace)
     }
 
+    /// The workspace's directory, as an absolute path without symbolic links.
     #[must_use]
     pub fn root(&self) -> &Path {
         &self.root
@@ -310,6 +311,10 @@ impl Workspace {
             Err(error) => Err(WorkspaceError::io(&path, "read")(error)),
         }
     }
+}
+
+fn canonical(path: &Path) -> Result<PathBuf, WorkspaceError> {
+    fs::canonicalize(path).map_err(WorkspaceError::io(path, "found"))
 }
 
 /// Whether a name in `tasks/` is one witdo reads as a task: `*.md`, not hidden.
@@ -471,11 +476,19 @@ mod tests {
     fn open_reads_the_settings() {
         let (dir, _) = workspace();
         let workspace = Workspace::open(dir.path()).unwrap();
-        assert_eq!(workspace.root(), dir.path());
+        assert_eq!(workspace.root(), dir.path().canonicalize().unwrap());
         assert_eq!(
             workspace.name(),
             dir.path().file_name().unwrap().to_string_lossy()
         );
+    }
+
+    #[test]
+    fn roots_are_absolute_and_canonical() {
+        let (dir, _) = workspace();
+        fs::create_dir(dir.path().join("sub")).unwrap();
+        let workspace = Workspace::open(&dir.path().join("sub/..")).unwrap();
+        assert_eq!(workspace.root(), dir.path().canonicalize().unwrap());
     }
 
     #[test]
