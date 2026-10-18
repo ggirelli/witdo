@@ -1,6 +1,7 @@
 //! Use cases: creating, editing, completing, reopening and deleting tasks, and handling
 //! workspaces and profiles. The UI talks to this crate only.
 
+mod present;
 mod problems;
 mod profile;
 mod session;
@@ -16,6 +17,7 @@ use std::sync::Arc;
 use jiff::Timestamp;
 use jiff::civil::Date;
 use jiff::tz::TimeZone;
+pub use present::{Detail, Layout, Linked, Row, ViewCounts, format_tags, parse_due, parse_tags};
 pub use problems::{ProblemKind, ProblemReport};
 pub use profile::{Command, Launch, Opening, ProfileSession, parse_args, start, usage};
 pub use session::{Deleted, Draft, Session};
@@ -50,6 +52,9 @@ pub enum AppError {
     /// The command line was not understood.
     #[error("{0}")]
     Usage(String),
+    /// Something typed into a field was not understood.
+    #[error("{0}")]
+    Input(String),
 }
 
 impl AppError {
