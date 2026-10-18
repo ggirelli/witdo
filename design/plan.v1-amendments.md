@@ -87,3 +87,20 @@ Amends §5. Decided 2026-10-18.
   byte; a new task's notes start after a blank line.
 - A file may start with a UTF-8 byte order mark; witdo ignores it and does not
   write it back.
+
+## Scanning in detail
+
+Amends §4 and §7. Decided 2026-10-18.
+
+- **Hidden entries** in `tasks/` (names starting with `.`, such as
+  `.DS_Store` or an editor's swap files) are skipped without a warning. Other
+  non-`.md` files and subdirectories are listed as ignored. `.md` is matched
+  ignoring case.
+- **Duplicate IDs:** none of the copies loads, so a task with a duplicate ID
+  is not shown or editable until the person deletes or fixes a copy; the
+  Problems panel lists every copy.
+- **Files that are not UTF-8** are listed as unreadable.
+- **Opening a workspace** recreates `tasks/`, `.witdo/trash/` and
+  `.witdo/tmp/` if they are missing, so deleting `.witdo/tmp/` never matters
+  (acceptance criterion 4). Settings from a newer schema version are refused
+  rather than guessed at.

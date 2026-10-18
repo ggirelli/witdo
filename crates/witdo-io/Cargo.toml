@@ -10,9 +10,14 @@ publish.workspace = true
 [dependencies]
 deunicode = "1"
 jiff.workspace = true
+serde = { version = "1", features = ["derive"] }
 thiserror.workspace = true
+toml = "1"
 witdo-core.workspace = true
 yaml-rust2 = "0.13"
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+tempfile = "3"
