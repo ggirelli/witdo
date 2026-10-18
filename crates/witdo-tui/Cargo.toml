@@ -13,3 +13,7 @@ witdo-app.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+jiff.workspace = true
+tempfile = "3"

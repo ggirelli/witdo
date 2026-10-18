@@ -1,36 +1,88 @@
-//! witdo in the terminal: what was, what is, what comes next, and what to do.
+//! witdo in the terminal: what was, what is, what then, do.
+
+mod app;
+mod input;
+mod ui;
 
 use std::io;
+use std::path::Path;
+use std::process::{Command as Process, ExitCode, ExitStatus};
+use std::time::Duration;
 
-use ratatui::crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use ratatui::layout::{Constraint, Layout};
-use ratatui::text::Line;
-use ratatui::widgets::{Block, Paragraph};
-use ratatui::{DefaultTerminal, Frame};
+use ratatui::DefaultTerminal;
+use ratatui::crossterm::event::{self, Event};
+use witdo_app::{Clock, Command, Profiles, parse_args, start, usage};
 
-fn main() -> io::Result<()> {
-    ratatui::run(run)
-}
+use crate::app::{Action, App};
 
-fn run(terminal: &mut DefaultTerminal) -> io::Result<()> {
-    loop {
-        terminal.draw(draw)?;
-        if let Event::Key(key) = event::read()?
-            && key.kind == KeyEventKind::Press
-            && matches!(key.code, KeyCode::Char('q') | KeyCode::Esc)
-        {
-            return Ok(());
+fn main() -> ExitCode {
+    let launch = match parse_args(
+        std::env::args_os().skip(1),
+        std::env::var_os("WITDO_PROFILE"),
+    ) {
+        Ok(Command::Run(launch)) => launch,
+        Ok(Command::Help) => {
+            print!("{}", usage("witdo-tui"));
+            return ExitCode::SUCCESS;
+        }
+        Ok(Command::Version) => {
+            println!("witdo-tui {}", env!("CARGO_PKG_VERSION"));
+            return ExitCode::SUCCESS;
+        }
+        Err(error) => {
+            eprintln!("{error}\n\n{}", usage("witdo-tui"));
+            return ExitCode::from(2);
+        }
+    };
+    let clock = Clock::system();
+    let started = Profiles::from_system()
+        .map_err(Into::into)
+        .and_then(|profiles| start(&launch, profiles, &clock));
+    let (profile, opening) = match started {
+        Ok(started) => started,
+        Err(error) => {
+            eprintln!("{error}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let mut app = App::new(profile, opening, clock);
+    match ratatui::run(|terminal| run(terminal, &mut app)) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("{error}");
+            ExitCode::FAILURE
         }
     }
 }
 
-fn draw(frame: &mut Frame) {
-    let [body, footer] =
-        Layout::vertical([Constraint::Fill(1), Constraint::Length(1)]).areas(frame.area());
-    frame.render_widget(
-        Paragraph::new("What was, what is, what comes next, and what to do.")
-            .block(Block::bordered().title(" witdo ")),
-        body,
-    );
-    frame.render_widget(Line::from("q quit"), footer);
+fn run(terminal: &mut DefaultTerminal, app: &mut App) -> io::Result<()> {
+    loop {
+        app.tick();
+        terminal.draw(|frame| ui::draw(frame, app))?;
+        if !event::poll(Duration::from_millis(250))? {
+            continue;
+        }
+        if let Event::Key(key) = event::read()? {
+            match app.handle_key(key) {
+                Some(Action::Quit) => return Ok(()),
+                Some(Action::OpenEditor(path)) => {
+                    ratatui::restore();
+                    let result = edit(&path);
+                    *terminal = ratatui::init();
+                    app.after_editor(result);
+                }
+                None => {}
+            }
+        }
+    }
+}
+
+/// Runs `$VISUAL` or `$EDITOR` (falling back to `vi`) on a file and waits for it.
+fn edit(path: &Path) -> io::Result<ExitStatus> {
+    let editor = std::env::var("VISUAL")
+        .or_else(|_| std::env::var("EDITOR"))
+        .unwrap_or_else(|_| "vi".to_owned());
+    let mut words = editor.split_whitespace();
+    let program = words.next().unwrap_or("vi");
+    Process::new(program).args(words).arg(path).status()
 }

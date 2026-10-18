@@ -6529,7 +6529,9 @@ dependencies = [
 name = "witdo-tui"
 version = "0.1.0"
 dependencies = [
+ "jiff",
  "ratatui",
+ "tempfile",
  "witdo-app",
 ]
 
