@@ -11,7 +11,7 @@
 
 3. Add or update tests. Domain rules (`witdo-core`) and storage rules (`witdo-io`) are tested
    before any UI depends on them.
-4. Update the docs that describe what you changed: [README.md](README.md) for people using witdo,
+4. Update the docs that describe what you changed: [the user guide](docs/) and [README.md](README.md) for people using witdo,
    `design/` for how it works (new decisions go in a new `design/plan.vN.md` or a focused note),
    and an entry in [CHANGELOG.md](CHANGELOG.md) under "Unreleased".
 

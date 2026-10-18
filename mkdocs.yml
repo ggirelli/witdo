@@ -1,0 +1,84 @@
+site_name: witdo
+site_description: What was, what is, what then, do. A calm, private, local-first task manager.
+site_url: https://ggirelli.github.io/witdo/
+repo_url: https://github.com/ggirelli/witdo
+repo_name: ggirelli/witdo
+edit_uri: edit/main/docs/
+copyright: Free software under the MIT licence.
+
+theme:
+  name: material
+  # Only the repository link, without facts fetched from GitHub (see overrides/partials).
+  custom_dir: overrides
+  logo: assets/icon-192.png
+  favicon: assets/icon-192.png
+  palette:
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.footer
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+# witdo makes no network requests, and neither does its guide: the privacy plugin downloads the
+# fonts (and any other external asset) at build time and serves them locally.
+plugins:
+  - search
+  - privacy
+
+exclude_docs: |
+  requirements.txt
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Guide:
+      - Getting started: getting-started.md
+      - Profiles and workspaces: profiles-and-workspaces.md
+      - Task file format: task-file-format.md
+  - Development: development.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.keys
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ggirelli/witdo
+      name: Source code

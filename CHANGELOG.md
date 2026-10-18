@@ -11,3 +11,4 @@ All notable changes to witdo are listed here. The format follows
 - Project skeleton: a Cargo workspace with `witdo-core`, `witdo-io`, `witdo-app` and
   `witdo-desktop`, a desktop window that opens, and `just` recipes for running and checking.
 - A terminal app, `witdo-tui`, alongside the desktop one. For now it opens and quits.
+- A user guide in `docs/`, built with MkDocs (`just docs`).

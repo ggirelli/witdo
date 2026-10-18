@@ -4,3 +4,7 @@
 # Full-size originals of the brand artwork; the committed copies are compressed.
 /assets/brand/witdo-banner.png
 /assets/brand/witdo-icon.png
+
+# Built documentation site, and the fonts the MkDocs privacy plugin downloads.
+/site
+/.cache

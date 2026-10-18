@@ -43,10 +43,14 @@ just run      # run the desktop app
 just tui      # run the terminal app (q or Esc quits)
 just build    # release build of both apps
 just check    # everything CI checks: rustfmt, clippy (pedantic, warnings are errors), tests, cargo-deny
+just docs     # the user guide, live at http://127.0.0.1:8000 (needs uv)
 ```
 
 `just fmt`, `just clippy`, `just test` and `just deny` run the individual
 checks.
+
+The user guide lives in [`docs/`](docs/) and is built with MkDocs into
+[ggirelli.github.io/witdo](https://ggirelli.github.io/witdo/).
 
 ## Profiles and workspaces
 
