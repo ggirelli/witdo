@@ -4,11 +4,11 @@
 
 **What was, what is, what comes next, and what to do.**
 
-witdo is a calm, private, local-first desktop task manager. Your tasks are plain Markdown files
+witdo is a calm, private, local-first task manager, as a desktop app or in the terminal. Your tasks are plain Markdown files
 in a folder you choose, pleasant to read and edit in Obsidian or any text editor. There is no
 account, server, telemetry or network access.
 
-> **Status:** early development. The app window opens, but it does not manage tasks yet. See
+> **Status:** early development. The desktop window and the terminal app open, but it does not manage tasks yet. See
 > [the implementation brief](design/plan.v1.md) for where it is heading.
 
 ## Setting up
@@ -19,7 +19,7 @@ You need:
   automatically by `rustup`.
 - [`just`](https://github.com/casey/just) to run the project's recipes.
 - [`cargo-deny`](https://github.com/EmbarkStudios/cargo-deny) for the dependency checks.
-- On Linux, the WebKitGTK and libsoup development packages, plus `xdo`, for the desktop window.
+- On Linux, for the desktop app only, the WebKitGTK and libsoup development packages, plus `xdo`, for the desktop window.
   On Debian or Ubuntu:
 
   ```sh
@@ -37,7 +37,8 @@ You need:
 ```sh
 just          # list the recipes
 just run      # run the desktop app
-just build    # release build
+just tui      # run the terminal app (q or Esc quits)
+just build    # release build of both apps
 just check    # everything CI checks: rustfmt, clippy (pedantic, warnings are errors), tests, cargo-deny
 ```
 
@@ -64,6 +65,7 @@ crates/
   witdo-io/        Markdown files, workspace layout, safe writes, trash, watching
   witdo-app/       use cases: task lifecycle, workspaces and profiles
   witdo-desktop/   Dioxus desktop UI and the `witdo` binary
+  witdo-tui/       terminal UI and the `witdo-tui` binary
 design/            plans and design notes
 assets/brand/      banner and icon
 ```

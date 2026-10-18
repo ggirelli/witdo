@@ -6,9 +6,13 @@ default:
 run *args:
     cargo run --locked -p witdo-desktop -- {{args}}
 
-# Build the desktop app in release mode
+# Run the terminal app (extra arguments go to witdo-tui)
+tui *args:
+    cargo run --locked -p witdo-tui -- {{args}}
+
+# Build both apps in release mode
 build:
-    cargo build --locked --release -p witdo-desktop
+    cargo build --locked --release -p witdo-desktop -p witdo-tui
 
 # Format all code
 fmt:

@@ -14,6 +14,7 @@ witdo-core = { path = "crates/witdo-core" }
 witdo-io = { path = "crates/witdo-io" }
 witdo-app = { path = "crates/witdo-app" }
 dioxus = { version = "0.7", features = ["desktop"] }
+ratatui = "0.30"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

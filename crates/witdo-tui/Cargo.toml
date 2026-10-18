@@ -1,0 +1,15 @@
+[package]
+name = "witdo-tui"
+description = "witdo in the terminal: a calm, private, local-first task manager"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+ratatui.workspace = true
+witdo-app.workspace = true
+
+[lints]
+workspace = true
