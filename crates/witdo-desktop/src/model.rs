@@ -52,6 +52,9 @@ pub struct Desk {
     pub nav: Nav,
     pub layout: Layout,
     pub search: String,
+    /// Everything but the text: status, priority, due date, category, tags, parent.
+    pub filters: Filter,
+    pub show_filters: bool,
     pub selected: Option<TaskId>,
     /// The selected task as it was when the person started editing it: saving an edit made
     /// from it stops with a conflict if the file changed since.
@@ -211,6 +214,18 @@ impl Model {
     pub fn set_search(&mut self, text: String) {
         if let Some(desk) = self.desk_mut() {
             desk.search = text;
+        }
+    }
+
+    pub fn set_filters(&mut self, change: impl FnOnce(&mut Filter)) {
+        if let Some(desk) = self.desk_mut() {
+            change(&mut desk.filters);
+        }
+    }
+
+    pub fn toggle_filters(&mut self) {
+        if let Some(desk) = self.desk_mut() {
+            desk.show_filters = !desk.show_filters;
         }
     }
 
@@ -448,6 +463,8 @@ impl Desk {
             nav: Nav::View(View::Next),
             layout: Layout::List,
             search: String::new(),
+            filters: Filter::default(),
+            show_filters: false,
             selected: None,
             base: None,
             notes_active: false,
@@ -457,8 +474,24 @@ impl Desk {
     pub fn filter(&self) -> Filter {
         Filter {
             text: self.search.clone(),
-            ..Filter::default()
+            ..self.filters.clone()
         }
+    }
+
+    /// How many filters (besides the search) are set.
+    pub fn active_filters(&self) -> usize {
+        let filters = &self.filters;
+        [
+            !filters.statuses.is_empty(),
+            !filters.priorities.is_empty(),
+            filters.due.is_some(),
+            filters.category.is_some(),
+            !filters.tags.is_empty(),
+            filters.parent.is_some(),
+        ]
+        .into_iter()
+        .filter(|set| *set)
+        .count()
     }
 
     pub fn rows(&self) -> Vec<Row> {
@@ -639,6 +672,33 @@ mod tests {
             model.message.as_ref().unwrap().text,
             "Moved “Call the bank” to the trash."
         );
+    }
+
+    #[test]
+    fn filters_narrow_the_list() {
+        let (_dir, mut model) = model();
+        model.capture("Call the bank");
+        model.capture("Pack books");
+        let id = model
+            .desk()
+            .unwrap()
+            .session
+            .tasks()
+            .iter()
+            .find(|t| t.title.as_str() == "Pack books")
+            .unwrap()
+            .id;
+        model.select(Some(id));
+        model.edit(|task, _| {
+            task.priority = witdo_app::model::Priority::High;
+            Ok(())
+        });
+        model.set_nav(Nav::View(View::All));
+        model.set_filters(|filter| filter.priorities = vec![witdo_app::model::Priority::High]);
+        let desk = model.desk().unwrap();
+        assert_eq!(desk.active_filters(), 1);
+        let titles: Vec<String> = desk.rows().into_iter().map(|row| row.title).collect();
+        assert_eq!(titles, ["Pack books"]);
     }
 
     #[test]

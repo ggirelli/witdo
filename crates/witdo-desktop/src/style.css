@@ -151,3 +151,8 @@ textarea { resize: vertical; min-height: 8rem; font-family: ui-monospace, "SF Mo
 .dialog fieldset input { width: auto; }
 .toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: var(--side); color: var(--side-text); padding: 0.5rem 1rem; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); z-index: 20; max-width: 80vw; }
 .toast.error { background: var(--danger); color: white; }
+
+/* Filters, under the toolbar. */
+.filters { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); align-items: center; font-size: 0.85rem; color: var(--muted); }
+.filters select { width: auto; padding: 0.15rem 0.35rem; }
+.toolbar > button.on { background: var(--select); font-weight: 600; }

@@ -5,7 +5,8 @@ use std::rc::Rc;
 
 use dioxus::prelude::*;
 use witdo_app::model::{
-    Category, PrerequisiteState, Priority, Status, SubtaskChoice, TaskId, Title, View,
+    Category, CategoryFilter, DueFilter, ParentFilter, PrerequisiteState, Priority, Status,
+    SubtaskChoice, Tag, TaskId, Title, View,
 };
 use witdo_app::{
     DirectoryState, Layout, Linked, ProblemKind, Row, WatchEvent, Watcher, format_tags, parse_due,
@@ -235,6 +236,7 @@ fn DeskView() -> Element {
             Sidebar {}
             main { class: "main",
                 Toolbar {}
+                FilterBar {}
                 if is_problems {
                     ProblemsList {}
                 } else {
@@ -347,10 +349,10 @@ fn NavGroup(
 fn Toolbar() -> Element {
     let mut model = model();
     let mut title = use_signal(String::new);
-    let (search, layout) = model
+    let (search, layout, active) = model
         .read()
         .desk()
-        .map(|desk| (desk.search.clone(), desk.layout))
+        .map(|desk| (desk.search.clone(), desk.layout, desk.active_filters()))
         .unwrap_or_default();
     rsx! {
         div { class: "toolbar",
@@ -380,6 +382,11 @@ fn Toolbar() -> Element {
                 oninput: move |e| model.write().set_search(e.value()),
                 onkeydown: move |e| field_keys(&e),
             }
+            button {
+                class: if active > 0 { "on" },
+                onclick: move |_| model.write().toggle_filters(),
+                if active > 0 { "Filters ({active})" } else { "Filters" }
+            }
             div { class: "segmented", role: "group", aria_label: "Layout",
                 button {
                     class: if layout == Layout::List { "on" },
@@ -391,6 +398,161 @@ fn Toolbar() -> Element {
                     onclick: move |_| model.write().set_layout(Layout::Tree),
                     "Tree"
                 }
+            }
+        }
+    }
+}
+
+/// The filter value for "no category": categories are trimmed, so none starts with a space.
+const NO_CATEGORY: &str = " uncategorized";
+
+/// Narrows the list by status, priority, due date, category, tag and parent.
+#[component]
+fn FilterBar() -> Element {
+    let mut model = model();
+    let model_ref = model.read();
+    let Some(desk) = model_ref.desk().filter(|desk| desk.show_filters) else {
+        return rsx! {};
+    };
+    let filters = desk.filters.clone();
+    let status = filters
+        .statuses
+        .first()
+        .map(|s| s.as_str().to_owned())
+        .unwrap_or_default();
+    let priority = filters
+        .priorities
+        .first()
+        .map(|p| p.as_str().to_owned())
+        .unwrap_or_default();
+    let due = match filters.due {
+        None => "",
+        Some(DueFilter::Overdue) => "overdue",
+        Some(DueFilter::Today) => "today",
+        Some(DueFilter::ThisWeek) => "week",
+        Some(DueFilter::NoDate) => "none",
+        Some(DueFilter::Between { .. }) => "range",
+    };
+    let category = match &filters.category {
+        None => String::new(),
+        Some(CategoryFilter::Uncategorized) => NO_CATEGORY.to_owned(),
+        Some(CategoryFilter::Is(category)) => category.to_string(),
+    };
+    let tag = filters
+        .tags
+        .first()
+        .map(|t| t.as_str().to_owned())
+        .unwrap_or_default();
+    let parent = match filters.parent {
+        None => String::new(),
+        Some(ParentFilter::TopLevel) => "top".to_owned(),
+        Some(ParentFilter::SubtreeOf(id)) => id.to_string(),
+    };
+    let categories = desk.session.tasks().categories();
+    let tags = desk.session.tasks().tags();
+    let parents: Vec<Linked> = desk
+        .session
+        .find_tasks("", None)
+        .into_iter()
+        .filter(|task| !desk.session.tasks().children(task.id).is_empty())
+        .collect();
+    rsx! {
+        div { class: "filters",
+            label { "Status "
+                select {
+                    onchange: move |e| {
+                        let value = e.value();
+                        model.write().set_filters(|f| f.statuses = value.parse::<Status>().into_iter().collect());
+                    },
+                    option { value: "", selected: status.is_empty(), "Any" }
+                    for s in Status::ALL {
+                        option { value: "{s.as_str()}", selected: status == s.as_str(), "{s.label()}" }
+                    }
+                }
+            }
+            label { "Priority "
+                select {
+                    onchange: move |e| {
+                        let value = e.value();
+                        model.write().set_filters(|f| f.priorities = value.parse::<Priority>().into_iter().collect());
+                    },
+                    option { value: "", selected: priority.is_empty(), "Any" }
+                    for p in Priority::ALL {
+                        option { value: "{p.as_str()}", selected: priority == p.as_str(), "{p.label()}" }
+                    }
+                }
+            }
+            label { "Due "
+                select {
+                    onchange: move |e| {
+                        let due = match e.value().as_str() {
+                            "overdue" => Some(DueFilter::Overdue),
+                            "today" => Some(DueFilter::Today),
+                            "week" => Some(DueFilter::ThisWeek),
+                            "none" => Some(DueFilter::NoDate),
+                            _ => None,
+                        };
+                        model.write().set_filters(|f| f.due = due);
+                    },
+                    option { value: "", selected: due.is_empty(), "Any" }
+                    option { value: "overdue", selected: due == "overdue", "Overdue" }
+                    option { value: "today", selected: due == "today", "Today" }
+                    option { value: "week", selected: due == "week", "This week" }
+                    option { value: "none", selected: due == "none", "No date" }
+                }
+            }
+            label { "Category "
+                select {
+                    onchange: move |e| {
+                        let value = e.value();
+                        let category = match value.as_str() {
+                            "" => None,
+                            NO_CATEGORY => Some(CategoryFilter::Uncategorized),
+                            name => Category::new(name).ok().map(CategoryFilter::Is),
+                        };
+                        model.write().set_filters(|f| f.category = category);
+                    },
+                    option { value: "", selected: category.is_empty(), "Any" }
+                    option { value: NO_CATEGORY, selected: category == NO_CATEGORY, "None" }
+                    for c in categories {
+                        option { value: "{c}", selected: category == c.as_str(), "{c}" }
+                    }
+                }
+            }
+            label { "Tag "
+                select {
+                    onchange: move |e| {
+                        let value = e.value();
+                        model.write().set_filters(|f| f.tags = Tag::new(&value).into_iter().collect());
+                    },
+                    option { value: "", selected: tag.is_empty(), "Any" }
+                    for t in tags {
+                        option { value: "{t}", selected: tag.to_lowercase() == t.key(), "{t}" }
+                    }
+                }
+            }
+            label { "Parent "
+                select {
+                    onchange: move |e| {
+                        let value = e.value();
+                        let parent = match value.as_str() {
+                            "" => None,
+                            "top" => Some(ParentFilter::TopLevel),
+                            id => id.parse::<TaskId>().ok().map(ParentFilter::SubtreeOf),
+                        };
+                        model.write().set_filters(|f| f.parent = parent);
+                    },
+                    option { value: "", selected: parent.is_empty(), "Any" }
+                    option { value: "top", selected: parent == "top", "Top level only" }
+                    for p in parents {
+                        option { value: "{p.id}", selected: parent == p.id.to_string(), "Under {p.title}" }
+                    }
+                }
+            }
+            button {
+                class: "ghost small",
+                onclick: move |_| model.write().set_filters(|f| *f = witdo_app::model::Filter::default()),
+                "Clear"
             }
         }
     }
@@ -987,6 +1149,7 @@ mod tests {
         edit(&mut model, house, &|t| t.status = Status::InProgress);
         model.set_nav(Nav::View(View::Open));
         model.set_layout(Layout::Tree);
+        model.toggle_filters();
         model.select(Some(load));
         model
     }
@@ -1020,6 +1183,7 @@ mod tests {
             "Heavy boxes first.",
             "Today / overdue",
             "Problems",
+            "Top level only",
             "Mark done",
         ] {
             assert!(html.contains(expected), "{expected} missing");
